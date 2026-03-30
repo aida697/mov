@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ლუკაის კინო </title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff003c;
+            --primary-glow: rgba(255, 0, 60, 0.6);
+            --bg: #050507;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text: #ffffff;
+            --accent: #00f2ff;
+            --sidebar-width: 380px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans Georgian', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Animated Ambient Background */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 60, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.08) 0%, transparent 40%);
+            z-index: -1;
+            animation: pulse 10s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Sidebar: Ultra Glass */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 10;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+        }
+
+        .logo-area {
+            padding: 50px 30px;
+            text-align: left;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(to right, #fff 20%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .ep-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 20px 40px 20px;
+            scrollbar-width: none;
+        }
+
+        .ep-list::-webkit-scrollbar { display: none; }
+
+        .ep-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .ep-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            width: 0;
+            height: 40%;
+            background: var(--primary);
+            transition: 0.3s;
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .ep-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateX(8px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .ep-card:hover::before {
+            width: 4px;
+        }
+
+        .ep-card.active {
+            background: rgba(255, 0, 60, 0.15);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(255, 0, 60, 0.2);
+        }
+
+        .ep-card.active::before {
+            width: 5px;
+            height: 60%;
+        }
+
+        .ep-num { 
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--accent);
+            opacity: 0.8;
+            font-weight: bold;
+        }
+
+        .ep-name {
+            font-weight: 400;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .video-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Ambient Glow behind Video */
+        .video-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            bottom: 0;
+            background: var(--primary-glow);
+            filter: blur(120px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .video-box {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        video { width: 100%; height: 100%; outline: none; display: block; }
+
+        .meta {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .meta h1 { 
+            font-size: 42px; 
+            margin: 0; 
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            color: #fff;
+        }
+
+        .info-badge {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .badge-item {
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ccc;
+            text-transform: uppercase;
+        }
+
+        .badge-item.red {
+            background: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 1100px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: 350px; border-right: none; border-bottom: 1px solid #222; }
+            .main { padding: 30px; }
+            .meta h1 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-area">კვირიაი მუვის HD</div>
+        <div class="ep-list" id="epList">
+            </div>
+    </aside>
+
+    <main class="main">
+        <div class="video-wrapper">
+            <div class="video-box">
+                <video id="videoPlayer" controls playsinline></video>
+            </div>
+        </div>
+        
+        <div class="meta">
+            <div class="info-badge">
+                <span class="badge-item red">კვირიაი მუვის HD</span>
+                <span class="badge-item">Season პერვი</span>
+                <span class="badge-item">ლუკაი</span>
+            </div>
+            <h1 id="displayTitle">ლუკაის კინო</h1>
+        </div>
+    </main>
+
+    <script>
+        const episodes = [
+            { id: 1, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6260/1/master.m3u8?md5=Pr9hIxksHffhVo13puIitg&expires=1778366082" },
+            { id: 2, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6261/1/master.m3u8?md5=KyOCUKeID2w44NR1i5CYMg&expires=1778366082" },
+            { id: 3, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6262/1/master.m3u8?md5=u4unbH7mfhnVcG3SFYbuHQ&expires=1778366082" },
+            { id: 4, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6263/1/master.m3u8?md5=tdB19Bd3UCEVrL3OGMUD1Q&expires=1778366082" },
+            { id: 5, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6264/1/master.m3u8?md5=pdEifAXcHycbXQ65uyarog&expires=1778366082" },
+            { id: 6, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6265/1/master.m3u8?md5=3ehz3L8j0C74OkTIh3IF7w&expires=1778366082" },
+            { id: 7, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6266/1/master.m3u8?md5=tpMfK24UXZJLJvPLrZslIQ&expires=1778366082" },
+            { id: 8, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6267/1/master.m3u8?md5=HkS_bCGmzC-3GobiAtUCqA&expires=1778366082" },
+            { id: 9, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6268/1/master.m3u8?md5=h3JFMb3emZHDuOZjo9ChRQ&expires=1778366082" },
+            { id: 10, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6269/1/master.m3u8?md5=c_ZBSpoI-25QN6C2tNvvRQ&expires=1778366082" },
+            { id: 11, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6270/1/master.m3u8?md5=yeI_NC2mjcJ6KPlB_gunlQ&expires=1778366082" },
+            { id: 12, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6271/1/master.m3u8?md5=sw0xqP2DSWRoUaq1bv6NyQ&expires=1778366082" },
+            { id: 13, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6272/1/master.m3u8?md5=5HyoYX0z7RWVGO6f_eSw4A&expires=1778366082" },
+            { id: 14, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6273/1/master.m3u8?md5=JSbI7WOWsPmYpR6htAHabQ&expires=1778366082" },
+            { id: 15, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6274/1/master.m3u8?md5=UDN1T-7jEcM2pt3NNcv2GQ&expires=1778366082" },
+            { id: 16, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6275/1/master.m3u8?md5=HRE0LnBpjrO31u3VLWam7g&expires=1778366082" },
+            { id: 17, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6276/1/master.m3u8?md5=xZjQGf-8Y5fzAMntsb4HUw&expires=1778366082" },
+            { id: 18, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6277/1/master.m3u8?md5=MUwuOaYkxo_RO0XNYMKqIg&expires=1778366082" },
+            { id: 19, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6278/1/master.m3u8?md5=4OHeOcYEw2fgqXGmQ8A6dw&expires=1778366082" },
+            { id: 20, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6279/1/master.m3u8?md5=96hSYVRwY_jWTaInwO5OaQ&expires=1778366082" },
+            { id: 21, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6280/1/master.m3u8?md5=k16sPbyt6122elZ1KJN0fg&expires=1778366082" },
+            { id: 22, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6281/1/master.m3u8?md5=p2Q4XMSqZBGP42jFlEJDrw&expires=1778366082" },
+            { id: 23, url: "https://storage.piratedfiles.net/storage/playlists/2024-09/6282/1/master.m3u8?md5=_YOiuKQnVYfV3sYUL23MHg&expires=1778366082" }
+        ];
+
+        const video = document.getElementById('videoPlayer');
+        let hls = new Hls();
+
+        function init() {
+            const list = document.getElementById('epList');
+            episodes.forEach(ep => {
+                const card = document.createElement('div');
+                card.className = 'ep-card';
+                card.innerHTML = `<span class="ep-num">${String(ep.id).padStart(2, '0')}</span> <span class="ep-name">ეპიზოდი ${ep.id}</span>`;
+                card.onclick = () => play(ep.url, ep.id, card);
+                list.appendChild(card);
+                if(ep.id === 1) play(ep.url, ep.id, card);
+            });
+        }
+
+        function play(url, id, el) {
+            document.querySelectorAll('.ep-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('displayTitle').innerText = "ეპიზოდი " + id;
+
+            if (Hls.isSupported()) {
+                hls.destroy();
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.play();
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
