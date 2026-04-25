@@ -2,25 +2,75 @@
 <html lang="ka">
 <head>
     <meta charset="UTF-8">
-    <title>M-Player TV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV PLAYER | GEO</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
-        .header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid #ff003c; }
-        .iframe-wrapper { width: 100%; height: calc(100% - 60px); }
-        iframe { width: 100%; height: 100%; border: none; }
-        .btn { background: #ff003c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        
+        .main-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background: #111;
+            color: #ff003c;
+            padding: 15px;
+            font-family: sans-serif;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        /* This is where the magic happens */
+        .iframe-container {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <span style="color: #ff003c; font-weight: 900;">TV STREAMING</span> 
-        <span style="margin-left: 20px; opacity: 0.7;">The Mentalist (Georgian)</span>
+    <div class="main-container">
+        <div class="top-bar">M-PLAYER TV MODE | THE MENTALIST</div>
+        
+        <div class="iframe-container" id="player-spot">
+            </div>
     </div>
 
-    <div class="iframe-wrapper">
-        <iframe src="proxy.php?id=17948" referrerpolicy="no-referrer"></iframe>
-    </div>
+    <script>
+        // The NewsID for The Mentalist
+        const newsId = "17948";
+        
+        function initPlayer() {
+            const spot = document.getElementById('player-spot');
+            
+            // We use the direct AJAX player link from Kinoebi
+            // We use referrerpolicy="no-referrer" to hide the fact that we are on GitHub
+            const playerUrl = `https://kinoebi.in/engine/ajax/get_player.php?news_id=${newsId}&tab=axali-fleieri&episode=1`;
 
+            spot.innerHTML = `
+                <iframe 
+                    src="${playerUrl}" 
+                    referrerpolicy="no-referrer"
+                    allow="autoplay; fullscreen"
+                    allowfullscreen>
+                </iframe>`;
+        }
+
+        // Wait 1 second before loading to ensure the browser is ready
+        setTimeout(initPlayer, 1000);
+    </script>
 </body>
 </html>
